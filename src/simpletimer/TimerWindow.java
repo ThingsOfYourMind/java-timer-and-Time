@@ -22,12 +22,11 @@ public class TimerWindow extends javax.swing.JFrame {
     Thread t = new Thread(timeUpdate, "Time");
     Thread tStart = new Thread(TimerStart, "Timer");
     
-    Calendar timerNow = Calendar.getInstance();
-    
     long timerStart_long;
     long new_long;
     long sysTime;
     long snapshotTimer;
+
     
     enum TimerState {
         RUNNING,
@@ -42,14 +41,8 @@ public class TimerWindow extends javax.swing.JFrame {
      */
     public TimerWindow() {
         initComponents();
-        if (!t.isAlive()){
-            t.start();
-        }
-        if (!tStart.isAlive()){
-            tStart.start();
-        }
-        
-        
+        startThreads();
+
     }
 
     /**
@@ -173,7 +166,6 @@ public class TimerWindow extends javax.swing.JFrame {
 
         switch(timerState){
             case STOPPED:
-                timerNow = Calendar.getInstance();
                 startStopButton.setText("Stop");
                 timerState = TimerState.RUNNING;
                 
@@ -230,6 +222,16 @@ public class TimerWindow extends javax.swing.JFrame {
     private void FileExitItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_FileExitItemActionPerformed
         System.exit(0);
     }//GEN-LAST:event_FileExitItemActionPerformed
+    
+    private void startThreads() {
+        if (!t.isAlive()){
+            t.start();
+        }
+        if (!tStart.isAlive()){
+            tStart.start();
+        }
+    }
+    
     private class realTimeSetter implements Runnable{
         /*
         * This is a runnable thread that
@@ -260,7 +262,7 @@ public class TimerWindow extends javax.swing.JFrame {
 
             while(true){
                 sysTime = System.currentTimeMillis();
-                //System.out.println("System " + sysTime);
+                
                 switch(timerState){
                     case RUNNING:
                         new_long = sysTime - timerStart_long;
@@ -268,8 +270,10 @@ public class TimerWindow extends javax.swing.JFrame {
                         break;
                     case PAUSED:
                         new_long = sysTime - timerStart_long;
-                        long difference = sysTime - timerStart_long - snapshotTimer;
-                        timerStart_long += difference;
+                        //long difference = sysTime - timerStart_long - snapshotTimer;
+                        //timerStart_long += difference;
+                        timerStart_long += (sysTime - timerStart_long - snapshotTimer);
+                        
                         break;
                     case STOPPED:
                         break;
@@ -288,7 +292,7 @@ public class TimerWindow extends javax.swing.JFrame {
         private String convertTime(long ms){
             long time = ms;
             
-            int time_ms = (int) (time % 999)/10;
+            int time_ms = (int) (time % 1000)/10;
             int time_sec = (int) (time / 1000) %60;
             int time_min = (int) ((time / 1000) / 60) % 60;
             int time_hours = (int) ((time / 1000) / 3600) % 24;
@@ -297,6 +301,7 @@ public class TimerWindow extends javax.swing.JFrame {
         }
         
     }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem FileExitItem;
     private javax.swing.JLabel jLabel1;
